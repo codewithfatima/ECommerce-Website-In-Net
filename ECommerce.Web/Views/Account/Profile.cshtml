@@ -1,0 +1,175 @@
+﻿@{
+    Layout = "_AuthLayout";
+}
+<div class="max-w-2xl mx-auto mt-12 px-4">
+
+    <!-- Profile Card -->
+    <div class="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
+
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 h-32"></div>
+
+        <div class="px-8 pb-8">
+
+            <!-- Profile Image -->
+            <div class="relative -mt-16 mb-6 flex justify-center">
+                <div class="relative">
+
+                    <img id="profilePreview"
+                         src="https://ui-avatars.com/api/?name=@ViewBag.Name&background=6366f1&color=fff&size=160"
+                         alt="Profile"
+                         class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg">
+
+                    <!-- Upload Button -->
+                    <label for="profileImage"
+                           class="absolute bottom-1 right-1 bg-indigo-600 hover:bg-indigo-700
+                                  text-white w-10 h-10 rounded-full flex items-center
+                                  justify-center cursor-pointer shadow-md transition">
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             class="w-5 h-5"
+                             fill="none"
+                             viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M3 7h4l2-3h6l2 3h4v12H3V7z" />
+                            <circle cx="12" cy="13" r="3" />
+                        </svg>
+
+                    </label>
+
+                    <input type="file"
+                           id="profileImage"
+                           name="ProfileImage"
+                           accept="image/png,image/jpeg,image/jpg"
+                           class="hidden"
+                           onchange="previewImage(event)" />
+                </div>
+            </div>
+
+            <!-- Title -->
+            <div class="text-center mb-8">
+                <h1 class="text-2xl font-bold text-gray-900">
+                    @ViewBag.FullName
+                </h1>
+
+                <p class="text-gray-500 mt-1">
+                    @ViewBag.Email
+                </p>
+            </div>
+
+            <!-- Profile Information -->
+            <form asp-action="Profile"
+                  asp-controller="Account"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="space-y-5">
+
+                <!-- Name -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Full Name
+                    </label>
+
+                    <input type="text"
+                           name="Name"
+                           value="@ViewBag.Name"
+                           class="w-full px-4 py-3 rounded-xl border border-gray-200
+                                  focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                                  outline-none transition" />
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address
+                    </label>
+
+                    <input type="email"
+                           name="Email"
+                           value="@ViewBag.Email"
+                           class="w-full px-4 py-3 rounded-xl border border-gray-200
+                                  bg-gray-50 outline-none" />
+                </div>
+
+                <!-- Image status -->
+                <div id="imageStatus"
+                     class="hidden p-3 rounded-xl bg-green-50 text-green-700 text-sm">
+                    New profile picture selected.
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex gap-3 pt-4">
+
+                    <button type="submit"
+                            class="flex-1 bg-indigo-600 hover:bg-indigo-700
+                                   text-white font-semibold py-3 px-6 rounded-xl
+                                   transition shadow-sm">
+                        Save Changes
+                    </button>
+
+                    <button type="button"
+                            onclick="removeImage()"
+                            class="px-6 py-3 rounded-xl border border-gray-200
+                                   text-gray-600 hover:bg-gray-50 transition">
+                        Remove
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const defaultImage =
+        "https://ui-avatars.com/api/?name=@ViewBag.Name&background=6366f1&color=fff&size=160";
+
+    function previewImage(event) {
+
+        const file = event.target.files[0];
+
+        if (!file) return;
+
+        // Validate image type
+        if (!file.type.startsWith("image/")) {
+            alert("Please select a valid image.");
+            event.target.value = "";
+            return;
+        }
+
+        // Validate size - 5 MB
+        if (file.size > 5 * 1024 * 1024) {
+            alert("Image size must be less than 5 MB.");
+            event.target.value = "";
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            document.getElementById("profilePreview").src = e.target.result;
+
+            document
+                .getElementById("imageStatus")
+                .classList.remove("hidden");
+        };
+
+        reader.readAsDataURL(file);
+    }
+
+    function removeImage() {
+
+        document.getElementById("profilePreview").src = defaultImage;
+
+        document.getElementById("profileImage").value = "";
+
+        document
+            .getElementById("imageStatus")
+            .classList.add("hidden");
+    }
+</script>
