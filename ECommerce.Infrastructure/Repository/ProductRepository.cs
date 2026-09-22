@@ -26,6 +26,8 @@ namespace ECommerce.Infrastructure.Repository
         public async Task<List<Product>> GetAllProductsAsync()
             => await _context.Products.ToListAsync();
 
+        public async Task<List<Product>> GetByIdsAsync(List<int> ids)
+    => await _context.Products.Where(p => ids.Contains(p.Id)).ToListAsync();
         public async Task<List<Product>> GetFilteredProductsAsync( string? name , string? category , string?  sortBy , int pageNumber = 1 , int pageSize = 12 )
         {
             var query = _context.Products.Include(p => p.Category).AsQueryable();

@@ -58,8 +58,11 @@
 
 
                     <!-- Wishlist -->
+                   
+
+                 
                     <button type="button"
-                            class="absolute top-5 right-5 z-10
+                                class="wishlist-btn absolute top-5 right-5 z-10
                                    w-11 h-11
                                    rounded-full
                                    bg-white
@@ -68,7 +71,10 @@
                                    shadow-md
                                    hover:text-red-500
                                    hover:scale-110
-                                   transition-all duration-300">
+                                   transition-all duration-300" 
+                                   data-product-id="@Model.Id"
+                            data-user-id="@ViewBag.UserId">
+                            
                         ♡
                     </button>
 
@@ -191,7 +197,7 @@
                                 </button>
 
                                 <button type="button" class=" bg-white border-2 border-gray-200 text-gray-900 font-bold px-6 py-4 rounded-full hover:border-indigo-600 hover:text-indigo-600 hover:-translate-y-1 transition-all duration-300">
-                                    Buy Now
+                                    ❤️ Add to Wishlist
                                 </button>
                             </div>
 
@@ -450,7 +456,7 @@
      function changeQty(amount){
          const input =document.getElementById('qtyInput');
         let newValue = parseInt(input.value) + amount;
-       if(newValue < 1) newValue = 1; // Prevent quantity from going below 1
+       if(newValue < 1) newValue = 1; 
        input.value = newValue;
      }
 </script>
@@ -481,3 +487,4 @@
         }
     });
                         </script>
+

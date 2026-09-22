@@ -5,9 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Json;
 using System.Net.WebSockets;
 using System.Reflection.Metadata.Ecma335;
+using System.Security.Claims;
 
 namespace ECommerce.Web.Controllers
 {
@@ -24,6 +26,21 @@ namespace ECommerce.Web.Controllers
             return !string.IsNullOrEmpty(HttpContext.Session.GetString("JWTToken"));
         }
        
+        private ClaimsPrincipal? GetUserFromToken()
+        {
+            var token = HttpContext.Session.GetString("JWTToken");
+            
+            if(string.IsNullOrEmpty(token))
+            {
+                return null;
+            }
+
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+
+            var identity = new ClaimsIdentity(jwtToken.Claims);
+            return new ClaimsPrincipal(identity);
+        }
 
         public async Task<IActionResult> Index(string? category, string? sortBy, string? name, int pageNumber = 1, int pageSize = 12)
         {
@@ -66,8 +83,15 @@ namespace ECommerce.Web.Controllers
             var httpClient = _httpClientFactory.CreateClient("ECommerceAPI");
             var product = await httpClient.GetFromJsonAsync<ProductDto>($"api/products/{id}");
             var allReviews = await httpClient.GetFromJsonAsync<List<Review>>("api/review");
-            var productReviews = allReviews.Where(p => p.ProductId == id).ToList();
+            var productReviews = allReviews!.Where(p => p.ProductId == id).ToList();
             ViewBag.Reviews = productReviews;
+
+            var user = GetUserFromToken();
+
+            if (user != null)
+            {
+                ViewBag.UserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            }
 
             return View(product);
         }
@@ -97,6 +121,35 @@ namespace ECommerce.Web.Controllers
             }
         }
 
-       
+
+        [HttpPost]
+        public async Task<IActionResult> AddToWishlist(int productId)
+        {
+            // We will add the logic here next
+            var user = GetUserFromToken();
+            var userId = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if(user == null)
+            {
+                return Json(new { requiresLogin = true });
+            }
+
+            var wishlist = new Whislist
+            {
+                UserId = userId!,
+                ProductId = productId
+            };
+
+            var client = _httpClientFactory.CreateClient("ECommerceAPI");
+            var response = await client.PostAsJsonAsync("api/wishlist", wishlist);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return Json(new { success = true });
+            }
+            return Json(new { success = false });
+            
+        }
+
     }
     }

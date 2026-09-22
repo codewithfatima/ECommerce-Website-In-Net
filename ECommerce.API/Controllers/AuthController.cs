@@ -65,7 +65,7 @@ namespace ECommerce.API.Controllers
         {
             var user = new ApplicationUser
             {
-                UserName= registerDto.Email,
+                UserName = registerDto.Email,
                 Email = registerDto.Email,
                 FullName = registerDto.FullName
             };
@@ -91,12 +91,12 @@ namespace ECommerce.API.Controllers
         {
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
 
-            if(user == null)
+            if (user == null)
             {
                 return Unauthorized("Invalid email or password.");
             }
 
-            var isPasswordVaild = await  _userManager.CheckPasswordAsync(user, loginDto.Password);
+            var isPasswordVaild = await _userManager.CheckPasswordAsync(user, loginDto.Password);
 
             if (!isPasswordVaild)
             {
@@ -105,7 +105,7 @@ namespace ECommerce.API.Controllers
 
             var roles = await _userManager.GetRolesAsync(user);
 
-            var token = GenerateJwtToken(user , roles);
+            var token = GenerateJwtToken(user, roles);
 
             return Ok(new { token });
         }
@@ -164,6 +164,45 @@ namespace ECommerce.API.Controllers
             }
 
             return Ok("Password has been reset successfully.");
+        }
+
+
+        [Authorize]
+        [HttpGet("profile")]
+
+        public async Task<IActionResult> GetProfile()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var user = await _userManager.FindByIdAsync(userId!);
+            if (user == null) return NotFound();
+
+            return Ok(new ProfileDto
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Email = user.Email ?? "",
+                ProfileImage = user.ProfileImage ?? ""
+            });
+
+        }
+
+
+        [Authorize]
+        [HttpPut("profile")]
+
+        public async Task<IActionResult> UpdateProfile( ProfileDto profileDto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null) return NotFound();
+
+           user.FullName  = profileDto.FullName;
+            user.ProfileImage = profileDto.ProfileImage;
+
+            await _userManager.UpdateAsync(user);
+            return Ok();
         }
 
     }

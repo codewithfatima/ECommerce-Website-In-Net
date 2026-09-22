@@ -1,12 +1,16 @@
 ﻿using ECommerce.Application.DTOs.Orders;
 using ECommerce.Application.Interfaces;
+using ECommerce.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using System.Security.Claims;
 
 namespace ECommerce.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class OrderController:ControllerBase
+    public class OrderController : ControllerBase
     {
 
         private readonly IOrderService _orderService;
@@ -16,53 +20,76 @@ namespace ECommerce.API.Controllers
             _orderService = orderService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> PlaceOrderAsync(CreateOrderDto dto)
         {
-            var orders = await _orderService.GetAllAsync();
-            return Ok(orders);
-        }
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id) 
-        {
-            var order = await _orderService.GetByIdAsync(id);
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            var order = await _orderService.PlaceOrderAsync(userId, dto);
 
             return Ok(order);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(int id, UpdateOrderDto updateOrderDto)
+        [Authorize]
+        [HttpGet("mine")]
+        public async Task<IActionResult> GetMyOrdersAsync()
         {
-            var order = await _orderService.GetByIdAsync( id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
+            var orders = await _orderService.GetMyOrdersAsync(userId!);
 
-            if(order == null)
-            {
-                return NotFound($"Order {id} not found.");
-            }
-            await _orderService.UpdateAsync(id , updateOrderDto);
-            return Ok("Order Updated successfully!");
+            return Ok(orders);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> AddAsync(CreateOrderDto createOrderDto)
+        [Authorize]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetOrderAsync(int id)
         {
-            await _orderService.AddAsync(createOrderDto);
-            return Ok("Order Added Successfully!");
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var order = await _orderService.GetOrderAsync(id, userId!);
+            if (order == null)
+                return NotFound();
+            return Ok(order);
+
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync(int id)
+        [Authorize]
+        [HttpPost("{id}/cancel")]
+        public async Task<IActionResult> CancelOrderAsync(int id, CancelOrderDto dto)
         {
-            var order = await _orderService.GetByIdAsync(id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if(order == null)
-            {
-                return NotFound($"Order {id} not found.");
-            }
-            await _orderService.DeleteAsync(id);
-            return Ok("Order Delete Successfully!");
-            
+            var success = await _orderService.CancelOrderAsync(id, userId!, dto.Reason);
+
+            if (!success)
+                return NotFound();
+
+            return Ok();
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> GetAllOrdersAsync()
+        {
+            var orders = await _orderService.GetAllOrdersAsync();
+            return Ok(orders);
+        }
+
+        [HttpPut("{id}/status")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateStatus(int id, UpdateStatusDto dto)
+        {
+            var success = await _orderService.UpdateStatusAsync(id, dto.NewStatus);
+
+            if (!success) return NotFound();
+
+            return Ok();
         }
 
     }

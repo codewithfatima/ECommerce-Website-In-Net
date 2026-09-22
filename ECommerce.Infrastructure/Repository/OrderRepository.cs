@@ -20,23 +20,17 @@ namespace ECommerce.Infrastructure.Repository
         }
 
         public async Task<List<Order>> GetAll()
-            => await _context.Orders.ToListAsync();
+            => await _context.Orders.Include(u => u.User).Include(o=>o.Items).ThenInclude(i=>i.Product).ToListAsync();
+        public async Task<List<Order>> GetByUserId(string userId)
+            => await _context.Orders.Include(o => o.Items).ThenInclude(i => i.Product).Where(o=>o.UserId == userId).ToListAsync();
         public async Task<Order?> GetById(int id)
-            => await _context.Orders.FindAsync(id);
+            => await _context.Orders.Include(u => u.User).Include(o => o.Items).ThenInclude(i => i.Product).FirstOrDefaultAsync(o => o.Id == id);
         public async Task AddAsync(Order order)
-        {
-            await _context.Orders.AddAsync(order);
-
-        }
+            => await _context.Orders.AddAsync(order);
         public async Task UpdateAsync(Order order)
-        {
-            _context.Orders.Update(order);
-        }
+            => _context.Orders.Update(order);
         public async Task DeleteAsync(Order order)
-        {
-            _context.Orders.Remove(order);
-
-        }
+            => _context.Orders.Remove(order);
         public async Task SaveChangesAsync()
            => await _context.SaveChangesAsync();
     }

@@ -13,6 +13,7 @@ namespace ECommerce.Application.Interfaces
     {
         Task<List<Product>> GetAllProductsAsync();
         Task<Product> GetProductByIdAsync(int id);
+        Task<List<Product>> GetByIdsAsync(List<int> ids);
         Task AddAsync(Product product);
         Task UpdateAsync(Product product);
         Task DeleteAsync(int id);

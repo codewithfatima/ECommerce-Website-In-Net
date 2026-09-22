@@ -1,0 +1,178 @@
+﻿@model List<ECommerce.Application.DTOs.Orders.OrderDto>
+
+    <div class="min-h-screen bg-[#fff7f4] px-4 py-8 sm:px-6 lg:px-8">
+
+    <div class="mx-auto max-w-5xl">
+
+        <!-- Header -->
+        <div class="mb-8">
+            <p class="text-sm font-medium text-orange-500">
+                Account
+            </p>
+
+            <h1 class="mt-1 text-3xl font-bold text-gray-900">
+                My Orders
+            </h1>
+
+            <p class="mt-2 text-sm text-gray-500">
+                View your orders, payment details and order status.
+            </p>
+        </div>
+
+
+        @if (Model == null || Model.Count == 0)
+        {
+            <!-- Empty State -->
+            <div class="rounded-2xl bg-white px-6 py-16 text-center shadow-sm ring-1 ring-gray-100">
+
+                <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-orange-50">
+                    <svg class="h-10 w-10 text-orange-500"
+                         fill="none"
+                         stroke="currentColor"
+                         viewBox="0 0 24 24">
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="1.5"
+                              d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0H4m5 4h6" />
+                    </svg>
+                </div>
+
+                <h2 class="mt-5 text-xl font-bold text-gray-900">
+                    No orders yet
+                </h2>
+
+                <p class="mx-auto mt-2 max-w-md text-sm text-gray-500">
+                    You haven't placed any orders yet.
+                    Start shopping and your orders will appear here.
+                </p>
+
+                <a asp-controller="Product"
+                   asp-action="Index"
+                   class="mt-6 inline-flex items-center rounded-lg bg-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600">
+                    Start Shopping
+                </a>
+            </div>
+        }
+        else
+        {
+            <!-- Orders -->
+            <div class="space-y-8">
+
+                @foreach (var order in Model)
+                {
+                    <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
+
+                        <!-- ================= HEADER ================= -->
+                        <div class="flex flex-col gap-4 border-b border-gray-100 p-5 sm:flex-row sm:items-center sm:justify-between">
+
+                            <div>
+                                <p class="text-xs font-medium uppercase tracking-wide text-gray-400">
+                                    Order
+                                </p>
+
+                                <h2 class="mt-1 text-lg font-bold text-gray-900">
+                                    #@order.Id
+                                </h2>
+
+                                <p class="mt-1 text-xs text-gray-500">
+                                    @order.OrderDate
+                                </p>
+                            </div>
+
+
+                            <!-- Status -->
+                            <div >
+                                @{
+                                    var statusClass = order.Status switch
+                                    {
+                                        ECommerce.Domain.Enums.OrderStatus.Pending => "bg-amber-50 text-amber-700 border-amber-200",
+                                        ECommerce.Domain.Enums.OrderStatus.Confirmed => "bg-blue-50 text-blue-700 border-blue-200",
+                                        ECommerce.Domain.Enums.OrderStatus.Shipped => "bg-purple-50 text-purple-700 border-purple-200",
+                                        ECommerce.Domain.Enums.OrderStatus.Delivered => "bg-emerald-50 text-emerald-700 border-emerald-200",
+                                        ECommerce.Domain.Enums.OrderStatus.Cancelled => "bg-red-50 text-red-700 border-red-200",
+                                        _ => "bg-white text-slate-700 border-slate-200"
+                                    };
+
+                                }
+                                <span class="rounded-full border  px-3 py-1 text-xs font-semibold  @statusClass">
+                                    @order.Status
+                                </span>
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================= CONTENT ================= -->
+                        <div class="p-5">
+
+                            <!-- Products -->
+                            <div>
+                                <div class="mb-4 flex items-center justify-between">
+                                    <h3 class="text-sm font-bold text-gray-900">
+                                        Order Items
+                                    </h3>
+
+                                    <span class="text-xs text-gray-400">
+                                        @order.Items.Count item@(order.Items.Count != 1 ? "s" : "")
+                                    </span>
+                                </div>
+
+
+                                <!-- COLUMN / VERTICAL ITEMS -->
+                                <div class="space-y-3">
+
+                                    @foreach (var item in order.Items)
+                                    {
+                                        <div class="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3">
+
+                                            <!-- Image -->
+                                            <div class="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-white">
+                                                <img src="/images/@item.ProductImage"
+                                                     alt="@item.ProductName"
+                                                     class="h-full w-full object-cover" />
+                                            </div>
+
+
+                                            <!-- Product info -->
+                                            <div class="min-w-0 flex-1">
+
+                                                <p class="truncate text-sm font-semibold text-gray-900">
+                                                    @item.ProductName
+                                                </p>
+
+                                                <p class="mt-1 text-xs text-gray-500">
+                                                    Quantity: @item.Quantity
+                                                </p>
+
+                                            </div>
+
+
+                                            <!-- Price -->
+                                            <div class="text-right">
+                                                <p class="text-sm font-bold text-gray-900">
+                                                    @item.UnitPrice
+                                                </p>
+                                            </div>
+
+                                        </div>
+                                    }
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                }
+
+
+
+            </div>
+
+
+        }
+
+
+
+    </div>
+</div>

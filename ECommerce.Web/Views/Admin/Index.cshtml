@@ -1,0 +1,1082 @@
+﻿@* @model List<ECommerce.Application.DTOs.Orders.OrderDto>
+@using ECommerce.Domain.Enums
+
+<div class="min-h-screen bg-slate-50 py-8">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
+        <!-- Header -->
+        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight text-slate-900">
+                    All Orders
+                </h1>
+                <p class="mt-1 text-sm text-slate-500">
+                    Manage and review all customer orders.
+                </p>
+            </div>
+
+            <div class="rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-200">
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                    Total Orders
+                </p>
+                <p class="text-2xl font-bold text-slate-900">
+                    @Model.Count
+                </p>
+            </div>
+        </div>
+
+        <!-- Orders -->
+        <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+
+ 
+           <!-- Desktop Header -->
+  <div class="hidden border-b border-slate-200 bg-slate-50 px-6 py-4 md:grid md:grid-cols-12 md:items-center md:gap-4">
+
+    <div class="col-span-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Order
+    </div>
+
+    <div class="col-span-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        User
+    </div>
+
+    <div class="col-span-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Quantity
+    </div>
+
+    <div class="col-span-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Date
+    </div>
+
+    <div class="col-span-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Status
+    </div>
+
+    <div class="col-span-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Total
+    </div>
+
+    <div class="col-span-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Action
+    </div>
+
+</div>
+
+
+            @if (Model.Any())
+            {
+                <div class="divide-y divide-slate-200">
+
+                    @foreach (var order in Model)
+                    {
+                        <div class="px-5 py-5 transition hover:bg-slate-50 sm:px-6">
+
+                          <!-- Desktop Layout -->
+<div class="hidden items-center md:grid md:grid-cols-12 md:gap-4">
+
+    <!-- Order -->
+    <div class="col-span-3">
+        <p class="font-semibold text-slate-900">
+            Order #@order.Id
+        </p>
+
+        <p class="mt-1 text-xs text-slate-400">
+            Order ID: @order.Id
+        </p>
+    </div>
+
+
+    <!-- User -->
+    <div class="col-span-2 min-w-0">
+        <p class="truncate text-sm font-semibold text-slate-900">
+            @order.CustomerName
+        </p>
+    </div>
+
+
+<!-- Status -->
+<div class="col-span-2">
+    <form asp-controller="Order"
+          asp-action="UpdateStatus"
+          asp-route-id="@order.Id"
+          method="post">
+
+          @{
+    var selectCls = order.Status switch
+    {
+        OrderStatus.Pending   => "bg-amber-50 text-amber-700 border-amber-200",
+        OrderStatus.Confirmed => "bg-blue-50 text-blue-700 border-blue-200",
+        OrderStatus.Shipped   => "bg-purple-50 text-purple-700 border-purple-200",
+        OrderStatus.Delivered => "bg-emerald-50 text-emerald-700 border-emerald-200",
+        OrderStatus.Cancelled => "bg-red-50 text-red-700 border-red-200",
+        _                     => "bg-white text-slate-700 border-slate-200"
+    };
+}
+
+<select name="NewStatus"
+        onchange="this.form.submit()"
+        class="rounded-lg border px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-200 @selectCls">
+
+    @foreach (var status in Enum.GetValues<OrderStatus>())
+    {
+        <option value="@((int)status)"
+                selected="@(order.Status == status)">
+            @status
+        </option>
+    }
+</select>
+    </form>
+
+ 
+</div>
+
+    <!-- Total -->
+    <div class="col-span-2">
+        <p class="font-bold text-slate-900">
+            @order.TotalAmount.ToString("C")
+        </p>
+    </div>
+
+
+    <!-- Action -->
+    <div class="col-span-3 flex items-center justify-end gap-2">
+
+        @if (order.Status == OrderStatus.Pending)
+        {
+            <!-- Confirm -->
+            <form asp-controller="Order"
+                  asp-action="UpdateStatus"
+                  asp-route-id="@order.Id"
+                  method="post">
+
+                <input type="hidden"
+                       name="NewStatus"
+                       value="@((int)OrderStatus.Confirmed)" />
+
+                <button type="submit"
+                        class="inline-flex items-center gap-2 rounded-lg
+                               bg-indigo-600 px-4 py-2 text-sm font-semibold
+                               text-white shadow-sm transition
+                               hover:bg-indigo-700
+                               focus:outline-none focus:ring-2
+                               focus:ring-indigo-500 focus:ring-offset-2">
+
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="h-4 w-4"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor">
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M5 13l4 4L19 7" />
+                    </svg>
+
+                    Confirm
+                </button>
+            </form>
+
+            <!-- Cancel -->
+            <form asp-controller="Order"
+                  asp-action="UpdateStatus"
+                  asp-route-id="@order.Id"
+                  method="post">
+
+                <input type="hidden"
+                       name="NewStatus"
+                       value="@((int)OrderStatus.Cancelled)" />
+
+                <button type="submit"
+                        class="rounded-lg border border-red-200
+                               bg-white px-4 py-2 text-sm font-semibold
+                               text-red-600 transition
+                               hover:bg-red-50
+                               focus:outline-none focus:ring-2
+                               focus:ring-red-500 focus:ring-offset-2">
+
+                    Cancel
+                </button>
+            </form>
+        }
+
+        else if (order.Status == OrderStatus.Confirmed)
+        {
+            <!-- Ship -->
+            <form asp-controller="Order"
+                  asp-action="UpdateStatus"
+                  asp-route-id="@order.Id"
+                  method="post">
+
+                <input type="hidden"
+                       name="NewStatus"
+                       value="@((int)OrderStatus.Shipped)" />
+
+                <button type="submit"
+                        class="inline-flex items-center gap-2 rounded-lg
+                               bg-indigo-600 px-4 py-2 text-sm font-semibold
+                               text-white shadow-sm transition
+                               hover:bg-indigo-700
+                               focus:outline-none focus:ring-2
+                               focus:ring-indigo-500 focus:ring-offset-2">
+
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="h-4 w-4"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor">
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M5 13l4 4L19 7" />
+                    </svg>
+
+                    Ship
+                </button>
+            </form>
+
+            <!-- Cancel -->
+            <form asp-controller="Order"
+                  asp-action="UpdateStatus"
+                  asp-route-id="@order.Id"
+                  method="post">
+
+                <input type="hidden"
+                       name="NewStatus"
+                       value="@((int)OrderStatus.Cancelled)" />
+
+                <button type="submit"
+                        class="rounded-lg border border-red-200
+                               bg-white px-4 py-2 text-sm font-semibold
+                               text-red-600 transition
+                               hover:bg-red-50
+                               focus:outline-none focus:ring-2
+                               focus:ring-red-500 focus:ring-offset-2">
+
+                    Cancel
+                </button>
+            </form>
+        }
+
+        else
+        {
+            <span class="text-sm text-slate-400">
+                No actions
+            </span>
+        }
+
+    </div>
+
+</div>
+</div>
+
+
+<!-- ========================= -->
+<!-- Mobile Layout -->
+<!-- ========================= -->
+
+<div class="md:hidden">
+
+    <div class="space-y-4">
+
+        <!-- Order Card -->
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+
+            <!-- Header -->
+            <div class="flex items-start justify-between gap-3">
+
+                <div>
+                    <p class="text-base font-bold text-slate-900">
+                        Order #@order.Id
+                    </p>
+
+                    <p class="mt-1 text-xs text-slate-400">
+                        Order ID: @order.Id
+                    </p>
+                </div>
+
+
+                <!-- Status Badge -->
+                @{
+                    var mobileStatusClass = order.Status switch
+                    {
+                        OrderStatus.Pending =>
+                            "bg-amber-50 text-amber-700 ring-amber-600/20",
+
+                        OrderStatus.Confirmed =>
+                            "bg-blue-50 text-blue-700 ring-blue-600/20",
+
+                        OrderStatus.Shipped =>
+                            "bg-purple-50 text-purple-700 ring-purple-600/20",
+
+                        OrderStatus.Delivered =>
+                            "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
+
+                        OrderStatus.Cancelled =>
+                            "bg-red-50 text-red-700 ring-red-600/20",
+
+                        _ =>
+                            "bg-slate-50 text-slate-700 ring-slate-600/20"
+                    };
+
+                    var mobileDotClass = order.Status switch
+                    {
+                        OrderStatus.Pending => "bg-amber-500",
+                        OrderStatus.Confirmed => "bg-blue-500",
+                        OrderStatus.Shipped => "bg-purple-500",
+                        OrderStatus.Delivered => "bg-emerald-500",
+                        OrderStatus.Cancelled => "bg-red-500",
+                        _ => "bg-slate-500"
+                    };
+                }
+
+                <span class="inline-flex shrink-0 items-center gap-1.5
+                             rounded-full px-3 py-1 text-xs font-semibold
+                             ring-1 ring-inset @mobileStatusClass">
+
+                    <span class="h-1.5 w-1.5 rounded-full @mobileDotClass"></span>
+
+                    @order.Status
+
+                </span>
+
+            </div>
+
+
+            <!-- Customer -->
+            <div class="mt-4 border-t border-slate-100 pt-4">
+
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                    Customer
+                </p>
+
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                    @order.CustomerName
+                </p>
+
+            </div>
+
+
+            <!-- Order Information -->
+            <div class="mt-4 grid grid-cols-2 gap-4 border-t border-slate-100 pt-4">
+
+                <!-- Quantity -->
+                <div>
+
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                        Quantity
+                    </p>
+
+                    <p class="mt-1 text-sm font-semibold text-slate-900">
+                        @order.Items.Count item@(order.Items.Count != 1 ? "s" : "")
+                    </p>
+
+                </div>
+
+
+                <!-- Total -->
+                <div>
+
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                        Total
+                    </p>
+
+                    <p class="mt-1 text-sm font-bold text-slate-900">
+                        @order.TotalAmount.ToString("C")
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Date -->
+            <div class="mt-4 border-t border-slate-100 pt-4">
+
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                    Date
+                </p>
+
+                <p class="mt-1 text-sm font-medium text-slate-700">
+                    @order.OrderDate.ToString("dd MMM yyyy, hh:mm tt")
+                </p>
+
+            </div>
+
+
+            <!-- Update Status -->
+            @if (order.Status != OrderStatus.Delivered &&
+                 order.Status != OrderStatus.Cancelled)
+            {
+                <div class="mt-4 border-t border-slate-100 pt-4">
+
+                    <p class="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400">
+                        Update Status
+                    </p>
+
+                    <form asp-controller="Order"
+                          asp-action="UpdateStatus"
+                          asp-route-id="@order.Id"
+                          method="post"
+                          class="flex gap-2">
+
+                        <select name="NewStatus"
+                                class="min-w-0 flex-1 rounded-lg border border-slate-300
+                                       bg-white px-3 py-2 text-sm font-medium
+                                       text-slate-700 shadow-sm
+                                       focus:border-indigo-500
+                                       focus:outline-none
+                                       focus:ring-2 focus:ring-indigo-500/20">
+
+                            @if (order.Status == OrderStatus.Pending)
+                            {
+                                <option value="@((int)OrderStatus.Pending)" selected>
+                                    Pending
+                                </option>
+
+                                <option value="@((int)OrderStatus.Confirmed)">
+                                    Confirmed
+                                </option>
+
+                                <option value="@((int)OrderStatus.Cancelled)">
+                                    Cancelled
+                                </option>
+                            }
+                            else if (order.Status == OrderStatus.Confirmed)
+                            {
+                                <option value="@((int)OrderStatus.Confirmed)" selected>
+                                    Confirmed
+                                </option>
+
+                                <option value="@((int)OrderStatus.Shipped)">
+                                    Shipped
+                                </option>
+
+                                <option value="@((int)OrderStatus.Cancelled)">
+                                    Cancelled
+                                </option>
+                            }
+                            else if (order.Status == OrderStatus.Shipped)
+                            {
+                                <option value="@((int)OrderStatus.Shipped)" selected>
+                                    Shipped
+                                </option>
+
+                                <option value="@((int)OrderStatus.Delivered)">
+                                    Delivered
+                                </option>
+                            }
+
+                        </select>
+
+
+                        <button type="submit"
+                                class="shrink-0 rounded-lg bg-indigo-600
+                                       px-4 py-2 text-sm font-semibold text-white
+                                       shadow-sm transition
+                                       hover:bg-indigo-700
+                                       focus:outline-none
+                                       focus:ring-2 focus:ring-indigo-500
+                                       focus:ring-offset-2">
+
+                            Update
+
+                        </button>
+
+                    </form>
+
+                </div>
+            }
+            else
+            {
+                <div class="mt-4 border-t border-slate-100 pt-4">
+
+                    <p class="text-sm text-slate-400">
+                        No actions available
+                    </p>
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+</div>
+
+                    }
+
+
+                </div>
+            }
+            else
+            {
+                <!-- Empty State -->
+                <div class="flex flex-col items-center justify-center px-6 py-16 text-center">
+
+                    <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             class="h-7 w-7 text-slate-400"
+                             fill="none"
+                             viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="1.5"
+                                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0H4m4-5h8" />
+                        </svg>
+                    </div>
+
+                    <h3 class="text-lg font-semibold text-slate-900">
+                        No orders found
+                    </h3>
+
+                    <p class="mt-1 max-w-sm text-sm text-slate-500">
+                        There are currently no orders available to display.
+                    </p>
+                </div>
+            }
+
+        </div>
+    </div>
+</div> *@
+@model List<ECommerce.Application.DTOs.Orders.OrderDto>
+@using ECommerce.Domain.Enums
+
+<div class="min-h-screen bg-slate-50 py-8">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
+        <!-- Header -->
+        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight text-slate-900">
+                    All Orders
+                </h1>
+                <p class="mt-1 text-sm text-slate-500">
+                    Manage and review all customer orders.
+                </p>
+            </div>
+
+            <div class="rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-200">
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                    Total Orders
+                </p>
+                <p class="text-2xl font-bold text-slate-900">
+                    @Model.Count
+                </p>
+            </div>
+        </div>
+
+        <!-- Orders -->
+        <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+
+ 
+           <!-- Desktop Header -->
+  <div class="hidden border-b border-slate-200 bg-slate-50 px-6 py-4 md:grid md:grid-cols-12 md:items-center md:gap-4">
+
+    <div class="col-span-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Order
+    </div>
+
+    <div class="col-span-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        User
+    </div>
+
+    <div class="col-span-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Quantity
+    </div>
+
+    <div class="col-span-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Date
+    </div>
+
+    <div class="col-span-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Status
+    </div>
+
+    <div class="col-span-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Total
+    </div>
+
+    <div class="col-span-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Action
+    </div>
+
+</div>
+
+
+            @if (Model.Any())
+            {
+                <div class="divide-y divide-slate-200">
+
+                    @foreach (var order in Model)
+                    {
+                        <div class="px-5 py-5 transition hover:bg-slate-50 sm:px-6">
+
+                          <!-- Desktop Layout -->
+<div class="hidden items-center md:grid md:grid-cols-12 md:gap-4">
+
+    <!-- Order -->
+    <div class="col-span-3">
+        <p class="font-semibold text-slate-900">
+            Order #@order.Id
+        </p>
+
+        <p class="mt-1 text-xs text-slate-400">
+            Order ID: @order.Id
+        </p>
+    </div>
+
+
+    <!-- User -->
+    <div class="col-span-2 min-w-0">
+        <p class="truncate text-sm font-semibold text-slate-900">
+            @order.CustomerName
+        </p>
+    </div>
+
+
+<!-- Status -->
+<div class="col-span-2">
+    <form asp-controller="Order"
+          asp-action="UpdateStatus"
+          asp-route-id="@order.Id"
+          method="post">
+
+          @{
+    var selectCls = order.Status switch
+    {
+        OrderStatus.Pending   => "bg-amber-50 text-amber-700 border-amber-200",
+        OrderStatus.Confirmed => "bg-blue-50 text-blue-700 border-blue-200",
+        OrderStatus.Shipped   => "bg-purple-50 text-purple-700 border-purple-200",
+        OrderStatus.Delivered => "bg-emerald-50 text-emerald-700 border-emerald-200",
+        OrderStatus.Cancelled => "bg-red-50 text-red-700 border-red-200",
+        _                     => "bg-white text-slate-700 border-slate-200"
+    };
+}
+
+<select name="NewStatus"
+        onchange="this.form.submit()"
+        class="rounded-lg border px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-200 @selectCls">
+
+    @foreach (var status in Enum.GetValues<OrderStatus>())
+    {
+        <option value="@((int)status)"
+                selected="@(order.Status == status)">
+            @status
+        </option>
+    }
+</select>
+    </form>
+
+ 
+</div>
+
+    <!-- Total -->
+    <div class="col-span-2">
+        <p class="font-bold text-slate-900">
+            @order.TotalAmount.ToString("C")
+        </p>
+    </div>
+
+
+    <!-- Action -->
+    <div class="col-span-3 flex items-center justify-end gap-2">
+
+        @if (order.Status == OrderStatus.Pending)
+        {
+            <!-- Confirm -->
+            <form asp-controller="Order"
+                  asp-action="UpdateStatus"
+                  asp-route-id="@order.Id"
+                  method="post">
+
+                <input type="hidden"
+                       name="NewStatus"
+                       value="@((int)OrderStatus.Confirmed)" />
+
+                <button type="submit"
+                        class="inline-flex items-center gap-2 rounded-lg
+                               bg-indigo-600 px-4 py-2 text-sm font-semibold
+                               text-white shadow-sm transition
+                               hover:bg-indigo-700
+                               focus:outline-none focus:ring-2
+                               focus:ring-indigo-500 focus:ring-offset-2">
+
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="h-4 w-4"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor">
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M5 13l4 4L19 7" />
+                    </svg>
+
+                    Confirm
+                </button>
+            </form>
+
+            <!-- Cancel -->
+            <form asp-controller="Order"
+                  asp-action="UpdateStatus"
+                  asp-route-id="@order.Id"
+                  method="post">
+
+                <input type="hidden"
+                       name="NewStatus"
+                       value="@((int)OrderStatus.Cancelled)" />
+
+                <button type="submit"
+                        class="rounded-lg border border-red-200
+                               bg-white px-4 py-2 text-sm font-semibold
+                               text-red-600 transition
+                               hover:bg-red-50
+                               focus:outline-none focus:ring-2
+                               focus:ring-red-500 focus:ring-offset-2">
+
+                    Cancel
+                </button>
+            </form>
+        }
+
+        else if (order.Status == OrderStatus.Confirmed)
+        {
+            <!-- Ship -->
+            <form asp-controller="Order"
+                  asp-action="UpdateStatus"
+                  asp-route-id="@order.Id"
+                  method="post">
+
+                <input type="hidden"
+                       name="NewStatus"
+                       value="@((int)OrderStatus.Shipped)" />
+
+                <button type="submit"
+                        class="inline-flex items-center gap-2 rounded-lg
+                               bg-indigo-600 px-4 py-2 text-sm font-semibold
+                               text-white shadow-sm transition
+                               hover:bg-indigo-700
+                               focus:outline-none focus:ring-2
+                               focus:ring-indigo-500 focus:ring-offset-2">
+
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="h-4 w-4"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor">
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M5 13l4 4L19 7" />
+                    </svg>
+
+                    Ship
+                </button>
+            </form>
+
+            <!-- Cancel -->
+            <form asp-controller="Order"
+                  asp-action="UpdateStatus"
+                  asp-route-id="@order.Id"
+                  method="post">
+
+                <input type="hidden"
+                       name="NewStatus"
+                       value="@((int)OrderStatus.Cancelled)" />
+
+                <button type="submit"
+                        class="rounded-lg border border-red-200
+                               bg-white px-4 py-2 text-sm font-semibold
+                               text-red-600 transition
+                               hover:bg-red-50
+                               focus:outline-none focus:ring-2
+                               focus:ring-red-500 focus:ring-offset-2">
+
+                    Cancel
+                </button>
+            </form>
+        }
+
+        else
+        {
+            <span class="text-sm text-slate-400">
+                No actions
+            </span>
+        }
+
+    </div>
+
+</div>
+</div>
+
+
+<!-- ========================= -->
+<!-- Mobile Layout -->
+<!-- ========================= -->
+
+<div class="md:hidden">
+
+    <div class="space-y-4">
+
+        <!-- Order Card -->
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+
+            <!-- Header -->
+            <div class="flex items-start justify-between gap-3">
+
+                <div>
+                    <p class="text-base font-bold text-slate-900">
+                        Order #@order.Id
+                    </p>
+
+                    <p class="mt-1 text-xs text-slate-400">
+                        Order ID: @order.Id
+                    </p>
+                </div>
+
+
+                <!-- Status Badge -->
+                @{
+                    var mobileStatusClass = order.Status switch
+                    {
+                        OrderStatus.Pending =>
+                            "bg-amber-50 text-amber-700 ring-amber-600/20",
+
+                        OrderStatus.Confirmed =>
+                            "bg-blue-50 text-blue-700 ring-blue-600/20",
+
+                        OrderStatus.Shipped =>
+                            "bg-purple-50 text-purple-700 ring-purple-600/20",
+
+                        OrderStatus.Delivered =>
+                            "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
+
+                        OrderStatus.Cancelled =>
+                            "bg-red-50 text-red-700 ring-red-600/20",
+
+                        _ =>
+                            "bg-slate-50 text-slate-700 ring-slate-600/20"
+                    };
+
+                    var mobileDotClass = order.Status switch
+                    {
+                        OrderStatus.Pending => "bg-amber-500",
+                        OrderStatus.Confirmed => "bg-blue-500",
+                        OrderStatus.Shipped => "bg-purple-500",
+                        OrderStatus.Delivered => "bg-emerald-500",
+                        OrderStatus.Cancelled => "bg-red-500",
+                        _ => "bg-slate-500"
+                    };
+                }
+
+                <span class="inline-flex shrink-0 items-center gap-1.5
+                             rounded-full px-3 py-1 text-xs font-semibold
+                             ring-1 ring-inset @mobileStatusClass">
+
+                    <span class="h-1.5 w-1.5 rounded-full @mobileDotClass"></span>
+
+                    @order.Status
+
+                </span>
+
+            </div>
+
+
+            <!-- Customer -->
+            <div class="mt-4 border-t border-slate-100 pt-4">
+
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                    Customer
+                </p>
+
+                <p class="mt-1 text-sm font-semibold text-slate-900">
+                    @order.CustomerName
+                </p>
+
+            </div>
+
+
+            <!-- Order Information -->
+            <div class="mt-4 grid grid-cols-2 gap-4 border-t border-slate-100 pt-4">
+
+                <!-- Quantity -->
+                <div>
+
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                        Quantity
+                    </p>
+
+                    <p class="mt-1 text-sm font-semibold text-slate-900">
+                        @order.Items.Count item@(order.Items.Count != 1 ? "s" : "")
+                    </p>
+
+                </div>
+
+
+                <!-- Total -->
+                <div>
+
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                        Total
+                    </p>
+
+                    <p class="mt-1 text-sm font-bold text-slate-900">
+                        @order.TotalAmount.ToString("C")
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Date -->
+            <div class="mt-4 border-t border-slate-100 pt-4">
+
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                    Date
+                </p>
+
+                <p class="mt-1 text-sm font-medium text-slate-700">
+                    @order.OrderDate.ToString("dd MMM yyyy, hh:mm tt")
+                </p>
+
+            </div>
+
+
+            <!-- Update Status -->
+            @if (order.Status != OrderStatus.Delivered &&
+                 order.Status != OrderStatus.Cancelled)
+            {
+                <div class="mt-4 border-t border-slate-100 pt-4">
+
+                    <p class="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400">
+                        Update Status
+                    </p>
+
+                    <form asp-controller="Order"
+                          asp-action="UpdateStatus"
+                          asp-route-id="@order.Id"
+                          method="post"
+                          class="flex gap-2">
+
+                        <select name="NewStatus"
+                                class="min-w-0 flex-1 rounded-lg border border-slate-300
+                                       bg-white px-3 py-2 text-sm font-medium
+                                       text-slate-700 shadow-sm
+                                       focus:border-indigo-500
+                                       focus:outline-none
+                                       focus:ring-2 focus:ring-indigo-500/20">
+
+                            @if (order.Status == OrderStatus.Pending)
+                            {
+                                <option value="@((int)OrderStatus.Pending)" selected>
+                                    Pending
+                                </option>
+
+                                <option value="@((int)OrderStatus.Confirmed)">
+                                    Confirmed
+                                </option>
+
+                                <option value="@((int)OrderStatus.Cancelled)">
+                                    Cancelled
+                                </option>
+                            }
+                            else if (order.Status == OrderStatus.Confirmed)
+                            {
+                                <option value="@((int)OrderStatus.Confirmed)" selected>
+                                    Confirmed
+                                </option>
+
+                                <option value="@((int)OrderStatus.Shipped)">
+                                    Shipped
+                                </option>
+
+                                <option value="@((int)OrderStatus.Cancelled)">
+                                    Cancelled
+                                </option>
+                            }
+                            else if (order.Status == OrderStatus.Shipped)
+                            {
+                                <option value="@((int)OrderStatus.Shipped)" selected>
+                                    Shipped
+                                </option>
+
+                                <option value="@((int)OrderStatus.Delivered)">
+                                    Delivered
+                                </option>
+                            }
+
+                        </select>
+
+
+                        <button type="submit"
+                                class="shrink-0 rounded-lg bg-indigo-600
+                                       px-4 py-2 text-sm font-semibold text-white
+                                       shadow-sm transition
+                                       hover:bg-indigo-700
+                                       focus:outline-none
+                                       focus:ring-2 focus:ring-indigo-500
+                                       focus:ring-offset-2">
+
+                            Update
+
+                        </button>
+
+                    </form>
+
+                </div>
+            }
+            else
+            {
+                <div class="mt-4 border-t border-slate-100 pt-4">
+
+                    <p class="text-sm text-slate-400">
+                        No actions available
+                    </p>
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+</div>
+
+                    }
+
+
+                </div>
+            }
+            else
+            {
+                <!-- Empty State -->
+                <div class="flex flex-col items-center justify-center px-6 py-16 text-center">
+
+                    <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             class="h-7 w-7 text-slate-400"
+                             fill="none"
+                             viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="1.5"
+                                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0H4m4-5h8" />
+                        </svg>
+                    </div>
+
+                    <h3 class="text-lg font-semibold text-slate-900">
+                        No orders found
+                    </h3>
+
+                    <p class="mt-1 max-w-sm text-sm text-slate-500">
+                        There are currently no orders available to display.
+                    </p>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>

@@ -4,7 +4,7 @@ namespace ECommerce.Web.Models
 {
     public class PagedProductResult
     {
-        public List<ProductDto> Products { get; set; }
+        public List<ProductDto> Products { get; set; } 
         public int TotalCount { get; set; }
     }
 }

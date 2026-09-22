@@ -13,6 +13,7 @@ namespace ECommerce.Application.Services
     {
         Task<IEnumerable<ProductDto>> GetAllProductsAsync();
         Task<ProductDto?> GetProductByIdAsync(int id);
+        //Task<List<Product>> GetByIdsAsync(List<int> ids);
         Task<ProductDto> AddAsync(CreateProductDto createProductDto);
         Task<ProductDto> UpdateAsync(int id, UpdateProductDto updateProductDto);
         Task DeleteAsync(int id);

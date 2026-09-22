@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ECommerce.Domain.Models
+namespace ECommerce.Application.DTOs.Orders
 {
-    internal class RolePermission
+    public class CancelOrderDto
     {
+        public string? Reason { get; set; }   // optional
+
     }
 }

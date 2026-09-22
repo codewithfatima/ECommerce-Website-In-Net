@@ -49,11 +49,11 @@ namespace ECommerce.Application.Services
                 Stock = p.Stock,
                 ProductImage = p.ProductImage,
                 CategoryId = p.CategoryId,
-                CategoryName = p.Category?.Name
+                CategoryName = p.Category?.Name ?? ""
 
             }).ToList();
         }
-
+      
         public async Task<ProductDto?> GetProductByIdAsync(int id) 
         {
             var product = await _repository.GetProductByIdAsync(id);
@@ -97,7 +97,7 @@ namespace ECommerce.Application.Services
                 Stock = product.Stock,
                 ProductImage = product.ProductImage,
                 CategoryId = product.CategoryId,
-                CategoryName = product.Category?.Name
+                CategoryName = product.Category?.Name ?? ""
             };
         }
 
@@ -129,7 +129,7 @@ namespace ECommerce.Application.Services
                 Stock = product.Stock,
                 ProductImage = product.ProductImage,
                 CategoryId = product.CategoryId,
-                CategoryName = product.Category?.Name
+                CategoryName = product.Category?.Name ?? ""
             };
         }
 

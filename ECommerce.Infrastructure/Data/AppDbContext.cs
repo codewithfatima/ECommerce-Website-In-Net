@@ -21,6 +21,7 @@ namespace ECommerce.Infrastructure.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<Whislist> Whislists { get; set; }
 
     }
 }

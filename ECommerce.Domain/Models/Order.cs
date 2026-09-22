@@ -10,13 +10,13 @@ namespace ECommerce.Domain.Entities
     public class Order
     {
         public int Id { get; set; }   //pK
-        public DateOnly OrderDate { get; set; }
-        public OrderStatus Status { get; set; } = OrderStatus.Pending;
+        public OrderStatus Status { get; set; }     
         public decimal TotalAmount { get; set; }
+        public DateTime OrderDate { get; set; }
 
-        public int CustomerId { get; set; } //Fk
-        public List<OrderItem> OrderItems { get; set; } = new List<OrderItem>(); //lsite of orders
-
+        public string UserId { get; set; } = string.Empty;  //FK to ApplicationUser
+        public ApplicationUser? User { get; set; }
+        public List<OrderItem> Items { get; set; } = new();
 
     }
 }

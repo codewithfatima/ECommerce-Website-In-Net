@@ -10,6 +10,7 @@ namespace ECommerce.Application.Interfaces
     public interface IOrderRepository
     {
         Task<List<Order>> GetAll();
+        Task<List<Order>> GetByUserId(string userId);
         Task<Order?> GetById(int id);
         Task AddAsync(Order order);
         Task UpdateAsync(Order order);

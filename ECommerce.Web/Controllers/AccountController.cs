@@ -1,11 +1,14 @@
 ﻿using ECommerce.Application.DTOs.Auth;
-using Microsoft.AspNetCore.Mvc;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using Microsoft.Identity.Client;
+using ECommerce.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Identity.Client;
+using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Security.Claims;
+using System.Threading.Tasks;
 namespace ECommerce.Web.Controllers
 {
     public class AccountController : Controller
@@ -92,24 +95,72 @@ namespace ECommerce.Web.Controllers
 
 
         [HttpGet]
-        public IActionResult Profile()
+        public async Task<IActionResult> Profile()
         {
-            var user = GetUserFromToken();
+            var token = HttpContext.Session.GetString("JWTToken");
+            if (string.IsNullOrEmpty(token))
+                return RedirectToAction("Login", "Account");
 
-            if (user == null)
-            {
-                return RedirectToAction("Login");
-            }
-            ViewBag.UserName = user.FindFirst(ClaimTypes.Name)?.Value;
-            ViewBag.UserEmail = user.FindFirst(ClaimTypes.Email)?.Value;
+            var client = _httpClientFactory.CreateClient("ECommerceAPI");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            return View();
+            var profile = await client.GetFromJsonAsync<ProfileDto>("api/auth/profile");
+
+            return View(profile);
         }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Profile(ProfileDto dto, IFormFile profileImageFile )
+        {
+            var token = HttpContext.Session.GetString("JWTToken");
+
+            if (string.IsNullOrEmpty(token)) return RedirectToAction("login", "Account");
+
+            var client = _httpClientFactory.CreateClient("ECommerceAPI");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            await client.PutAsJsonAsync("api/auth/profile", dto );
+
+            var content = new MultipartFormDataContent();
+            var stream = profileImageFile.OpenReadStream();
+
+            var fileContent = new StreamContent(stream);
+
+            content.Add(
+                fileContent,
+                "profileImageFile",
+                profileImageFile.FileName
+            );
+
+            TempData["SuccessMessage"] = "Profile updated!";
+            return RedirectToAction("Profile");
+        }
+
         [HttpPost]
         [Authorize]
         public IActionResult Logout()
         {
             return RedirectToAction("Index" , "Home");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Wislist()
+        {
+            var user = GetUserFromToken();
+            var userId = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var client = _httpClientFactory.CreateClient("ECommerceAPI");
+
+            var wishlist = await client.GetFromJsonAsync<List<Whislist>>(
+                $"api/wishlist?userId={userId}");
+
+            return View(wishlist);
         }
 
     }
