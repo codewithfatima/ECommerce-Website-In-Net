@@ -5,9 +5,14 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 
+// builder.Services.AddHttpClient("ECommerceAPI", client =>
+// {
+//     client.BaseAddress = new Uri("https://localhost:7277/");
+// });
+
 builder.Services.AddHttpClient("ECommerceAPI", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7277/");
+    client.BaseAddress = new Uri("http://my-api.tryasp.net/");
 });
 
 var app = builder.Build();
